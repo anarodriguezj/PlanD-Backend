@@ -1,0 +1,21 @@
+# Ignorar entorno virtual
+djangoServer/
+venv/
+.env
+
+# Archivos de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de Django
+db.sqlite3
+
+# Archivos de compilación de frontend
+node_modules/
+.next/
+out/
