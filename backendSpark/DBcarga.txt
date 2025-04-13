@@ -1,0 +1,170 @@
+data = [
+    {
+        "username": "UsuarioDemo1",
+        "first_name": "Carlos",
+        "last_name": "Ramírez",
+        "email": "usuario1@demo.com",
+        "birth_date": "1995-03-20",
+        "municipality": "Valencia",
+        "locality": "Ciutat Vella",
+        "password": "DemoPass1"
+    },
+    {
+        "username": "UsuarioDemo2",
+        "first_name": "Lucía",
+        "last_name": "Fernández",
+        "email": "usuario2@demo.com",
+        "birth_date": "1990-08-12",
+        "municipality": "Bilbao",
+        "locality": "Abando",
+        "password": "DemoPass2"
+    },
+    {
+        "username": "UsuarioDemo3",
+        "first_name": "Miguel",
+        "last_name": "Torres",
+        "email": "usuario3@demo.com",
+        "birth_date": "1987-11-30",
+        "municipality": "Zaragoza",
+        "locality": "Casco Histórico",
+        "password": "DemoPass3"
+    }
+]
+
+from your_app.models import CustomUser
+from users.models import CustomUser
+from django.utils import timezone
+
+for item in data:
+    user = CustomUser.objects.create_user(
+        username=item["username"],
+        first_name=item["first_name"],
+        last_name=item["last_name"],
+        email=item["email"],
+        password=item["password"],
+        birth_date=item["birth_date"],
+        municipality=item["municipality"],
+        locality=item["locality"]
+    )
+    user.save()
+
+# SUBASTAS
+
+from auctions.models import Category, Auction
+from datetime import timedelta
+from django.utils import timezone
+from users.models import CustomUser
+
+# Crear o recuperar categorías
+category_smartphone, _ = Category.objects.get_or_create(name='smartphone')
+category_laptop, _ = Category.objects.get_or_create(name='portátil')
+category_tablet, _ = Category.objects.get_or_create(name='tablet')
+category_console, _ = Category.objects.get_or_create(name='consola')
+
+# Datos de productos electrónicos
+data = [
+    {
+        "title": "iPhone 14 Pro Max",
+        "description": "Pantalla Super Retina XDR de 6.7 pulgadas, chip A16 Bionic, cámara de 48 MP, y Dynamic Island. Resistencia al agua y Face ID integrado.",
+        "price": 1399,
+        "rating": 4.8,
+        "stock": 15,
+        "brand": "Apple",
+        "category": category_smartphone,
+        "thumbnail": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-14-pro-model-unselect-gallery-2-202209_GEO_EMEA_LANG_DE?wid=5120&hei=2880&fmt=jpeg&qlt=80&.v=1660686382289"
+    },
+    {
+        "title": "Samsung Galaxy S23 Ultra",
+        "description": "Pantalla AMOLED de 6.8 pulgadas, cámara de 200 MP, S Pen integrado, y procesador Snapdragon 8 Gen 2.",
+        "price": 1299,
+        "rating": 4.7,
+        "stock": 10,
+        "brand": "Samsung",
+        "category": category_smartphone,
+        "thumbnail": "https://images.samsung.com/is/image/samsung/p6pim/es/sm-s918bzkdeub/gallery/es-galaxy-s23-s918-sm-s918bzkdeub-thumb-535403816"
+    },
+    {
+        "title": "MacBook Pro M2 16\"",
+        "description": "Chip M2 Pro, pantalla Liquid Retina XDR, 16 GB RAM, 1 TB SSD. Ideal para creadores de contenido y desarrolladores.",
+        "price": 2899,
+        "rating": 4.9,
+        "stock": 8,
+        "brand": "Apple",
+        "category": category_laptop,
+        "thumbnail": "https://www.macnificos.com/sites/default/files/apple-macbook-pro-16-m2-2023.jpg"
+    },
+    {
+        "title": "Asus ROG Zephyrus G14",
+        "description": "Portátil gaming con Ryzen 9 y RTX 4060, pantalla QHD de 165Hz, 32GB RAM. Rendimiento extremo en formato compacto.",
+        "price": 1999,
+        "rating": 4.6,
+        "stock": 6,
+        "brand": "Asus",
+        "category": category_laptop,
+        "thumbnail": "https://dlcdnwebimgs.asus.com/gain/5b6d7c45-b8b3-47c4-8061-4b5be2793da1/"
+    },
+    {
+        "title": "iPad Pro 12.9 M2",
+        "description": "El iPad más potente con chip M2, pantalla Liquid Retina XDR, compatible con Apple Pencil 2 y Magic Keyboard.",
+        "price": 1499,
+        "rating": 4.8,
+        "stock": 10,
+        "brand": "Apple",
+        "category": category_tablet,
+        "thumbnail": "https://www.apple.com/newsroom/images/product/ipad/standard/Apple_iPad-Pro_hero_10252022_big.jpg.large.jpg"
+    },
+    {
+        "title": "Xbox Series X",
+        "description": "La consola más potente de Microsoft, con 1 TB SSD, resolución hasta 4K y compatibilidad con juegos de generaciones anteriores.",
+        "price": 599,
+        "rating": 4.7,
+        "stock": 12,
+        "brand": "Microsoft",
+        "category": category_console,
+        "thumbnail": "https://cdn.cloudflare.steamstatic.com/steam/apps/1642430/capsule_616x353.jpg?t=1675219115"
+    },
+    {
+        "title": "PlayStation 5",
+        "description": "Consola de nueva generación con SSD ultrarrápido, gráficos 4K y mando DualSense con respuesta háptica.",
+        "price": 549,
+        "rating": 4.9,
+        "stock": 14,
+        "brand": "Sony",
+        "category": category_console,
+        "thumbnail": "https://www.sony.com/image/b9923056dc7fd4704a6bbd66e2cf4e5e?fmt=pjpeg&bgcolor=FFFFFF&bgc=FFFFFF&wid=2515&hei=1320"
+    },
+]
+
+# Obtener usuario subastador
+auctioneer = CustomUser.objects.get(username="UsuarioDemo1")
+
+# Crear subastas
+for item in data:
+    Auction.objects.create(
+        title=item["title"],
+        description=item["description"],
+        price=item["price"],
+        rating=item["rating"],
+        stock=item["stock"],
+        brand=item["brand"],
+        category=item["category"],
+        thumbnail=item["thumbnail"],
+        closing_date=timezone.now() + timedelta(days=30),
+        creation_date=timezone.now(),
+        auctioneer=auctioneer
+    )
+
+pruebas2 = CustomUser.objects.get(username="UsuarioDemo2")
+pruebas3 = CustomUser.objects.get(username="UsuarioDemo3")
+
+# Asignar pujas del usuario Pruebas2
+Bid.objects.create(auction=Auction.objects.get(id=1), user=pruebas2, amount=500)
+Bid.objects.create(auction=Auction.objects.get(id=2), user=pruebas2, amount=650)
+Bid.objects.create(auction=Auction.objects.get(id=3), user=pruebas2, amount=900)
+
+# Asignar pujas del usuario Pruebas3
+Bid.objects.create(auction=Auction.objects.get(id=2), user=pruebas3, amount=700)
+Bid.objects.create(auction=Auction.objects.get(id=3), user=pruebas3, amount=950)
+Bid.objects.create(auction=Auction.objects.get(id=4), user=pruebas3, amount=1200)
+
+

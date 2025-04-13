@@ -1,6 +1,7 @@
-from .models import Auction, Category
-from .serializers import AuctionListCreateSerializer, AuctionDetailSerializer, CategoryListCreateSerializer, CategoryDetailSerializer
+from .models import Auction, Category, Bid
+from .serializers import AuctionListCreateSerializer, AuctionDetailSerializer, CategoryListCreateSerializer, CategoryDetailSerializer, BidListCreateSerializer, BidDetailSerializer
 from rest_framework import generics
+from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -67,8 +68,42 @@ class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoryDetailSerializer
 
-class UserAuctionListView(APIView):
+class BidListCreateView(generics.ListCreateAPIView):
+
+    serializer_class = BidDetailSerializer
+
+    def get_queryset(self):
+        return Bid.objects.filter(auction_id=self.kwargs['auction_id']).order_by('-amount')
+
+    def perform_create(self, serializer):
+        auction = Auction.objects.get(pk=self.kwargs['auction_id'])  # obtiene el objeto completo
+        serializer.save(auction=auction, user=self.request.user)
+
+
+class UserBidListView(generics.ListAPIView):
+
     permission_classes = [IsAuthenticated]
+    serializer_class = BidDetailSerializer
+
+    def get_queryset(self):
+        return Bid.objects.filter(user=self.request.user)
+
+class BidDetailView(generics.RetrieveUpdateDestroyAPIView):
+
+    serializer_class = BidDetailSerializer
+
+    def get_queryset(self):
+        return Bid.objects.filter(auction_id=self.kwargs['auction_id']) 
+        
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+class UserAuctionListView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         # Obtener las subastas del usuario autenticado
         user_auctions = Auction.objects.filter(auctioneer=request.user)

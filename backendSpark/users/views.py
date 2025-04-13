@@ -40,6 +40,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     
 class LogoutView(APIView):
+    
     permission_classes = [IsAuthenticated]
     def post(self, request):
         """Realiza el logout eliminando el RefreshToken (revocar)"""
@@ -69,7 +70,9 @@ class LogoutView(APIView):
 
 
 class UserProfileView(APIView):
+
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)

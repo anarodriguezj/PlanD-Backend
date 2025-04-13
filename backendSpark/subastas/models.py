@@ -35,18 +35,16 @@ class Auction(models.Model):
     def __str__(self):  
         return self.title
 
-class Bid(models.Model):
 
-    '''Modelo de puja'''
+class Bid(models.Model):
     
-    amount = models.DecimalField(max_digits=10, decimal_places=2) # Precio de la puja
-    timestamp = models.DateTimeField(auto_now_add=True) # Fecha de creación la puja
-    user = models.CharField(max_length=100) # Pujador 
-    auction = models.ForeignKey(Auction, related_name='pujas', on_delete=models.CASCADE) # Identificador de la subasta a la que pertenece la puja
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  # Aquí usamos CustomUser
+    auction = models.ForeignKey(Auction, related_name='pujas', on_delete=models.CASCADE)
 
     class Meta:
-        ordering=('id',)
+        ordering = ('id',)
 
     def __str__(self):
-        return f"{self.user} bid {self.amount} on {self.auction.title}"
-    
+        return f"{self.user.username} bid {self.amount} on {self.auction.title}"
