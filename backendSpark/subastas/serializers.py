@@ -52,10 +52,14 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
     isOpen = serializers.SerializerMethodField(read_only=True)
+    category = serializers.CharField(source="category.name", read_only=True) # Para mostrar la categoria en el detalle de la subasta
 
     class Meta:
         model = Auction
-        fields = '__all__'
+        fields = [
+            "id", "title", "description", "price", "rating", "stock", "brand",
+            "thumbnail", "creation_date", "closing_date", "isOpen", "category"
+        ]
 
     def get_isOpen(self, obj):
         return obj.closing_date > timezone.now()
@@ -65,6 +69,7 @@ class CategoryListCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id','name']
+
 class CategoryDetailSerializer(serializers.ModelSerializer):
 
     class Meta:

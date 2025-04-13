@@ -1,6 +1,7 @@
 from .models import Auction, Category
-from .serializers import AuctionSerializer, AuctionDetailSerializer, CategoryListCreateSerializer, CategoryDetailSerializer
+from .serializers import AuctionListCreateSerializer, AuctionDetailSerializer, CategoryListCreateSerializer, CategoryDetailSerializer
 from rest_framework import generics
+from django.db.models import Q
 
 class AuctionListCreate(generics.ListCreateAPIView):
     
@@ -10,8 +11,30 @@ class AuctionListCreate(generics.ListCreateAPIView):
         - Útil para endpoints que necesitan mostrar una lista de recursos y permitir la creación
         de nuevos recursos.'''
 
-    queryset = Auction.objects.all()
-    serializer_class = AuctionSerializer
+    serializer_class = AuctionListCreateSerializer
+
+    def get_queryset(self):
+
+        queryset = Auction.objects.all()
+        params = self.request.query_params
+
+        search = params.get('search')
+        categoria = params.get('categoria')
+        precio_max = params.get('precioMax')
+
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search) |
+                Q(description__icontains=search)
+            )
+
+        if categoria:
+            queryset = queryset.filter(category__name__iexact=categoria)
+
+        if precio_max:
+            queryset = queryset.filter(price__lte=precio_max)
+
+        return queryset
 
 class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     '''
