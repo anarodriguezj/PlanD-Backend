@@ -1,4 +1,5 @@
 from django.db import models
+from users.models import CustomUser
 
 class Category(models.Model):
 
@@ -26,7 +27,8 @@ class Auction(models.Model):
     rating = models.DecimalField(max_digits=3, decimal_places=2) # Valoración
     category = models.ForeignKey(Category, related_name='subastas', on_delete=models.CASCADE) # Categoría
     brand = models.CharField(max_length=100) # Marca
-    
+    auctioneer = models.ForeignKey(CustomUser, related_name='auctions', on_delete=models.CASCADE) # Usuario que crea la subasta
+
     class Meta:
         ordering=('id',) 
     

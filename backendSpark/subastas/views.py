@@ -2,6 +2,9 @@ from .models import Auction, Category
 from .serializers import AuctionListCreateSerializer, AuctionDetailSerializer, CategoryListCreateSerializer, CategoryDetailSerializer
 from rest_framework import generics
 from django.db.models import Q
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from .permissions import IsOwnerOrAdmin
 
 class AuctionListCreate(generics.ListCreateAPIView):
     
@@ -21,6 +24,7 @@ class AuctionListCreate(generics.ListCreateAPIView):
         search = params.get('search')
         categoria = params.get('categoria')
         precio_max = params.get('precioMax')
+        precio_min = params.get('precioMin')
 
         if search:
             queryset = queryset.filter(
@@ -30,6 +34,9 @@ class AuctionListCreate(generics.ListCreateAPIView):
 
         if categoria:
             queryset = queryset.filter(category__name__iexact=categoria)
+
+        if precio_min:
+            queryset = queryset.filter(price__gte=precio_min)
 
         if precio_max:
             queryset = queryset.filter(price__lte=precio_max)
@@ -46,6 +53,7 @@ class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         - Útil para endpoints que necesitan mostrar un recurso específico y permitir su
         actualización y eliminación.'''
     
+    permission_classes = [IsOwnerOrAdmin]
     queryset = Auction.objects.all()
     serializer_class = AuctionDetailSerializer
 
@@ -58,3 +66,11 @@ class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = Category.objects.all()
     serializer_class = CategoryDetailSerializer
+
+class UserAuctionListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        # Obtener las subastas del usuario autenticado
+        user_auctions = Auction.objects.filter(auctioneer=request.user)
+        serializer = AuctionListCreateSerializer(user_auctions, many=True)
+        return Response(serializer.data)

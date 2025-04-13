@@ -16,9 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     # redirige todas las URLs que empiecen por /api/subastas/ a otro archivo de rutas dentro de la app subastas
-    path("api/subastas/", include("subastas.urls")), 
+    path("api/subastas/", include("subastas.urls")),
+    # redirige todas las URLs que empiecen por /api/users/ a otro archivo de rutas dentro de la app users
+    path("api/users/", include("users.urls")),
+    # para realizar login (django lo gestiona automáticamente)
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
 ]
