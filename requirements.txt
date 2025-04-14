@@ -102,7 +102,7 @@ pyrsistent==0.18.1
 pyserial==3.5
 pytest==7.4.4
 pytest-order==1.2.0
-python-apt==2.4.0+ubuntu4
+# python-apt==2.4.0+ubuntu4
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 pytz==2022.1
