@@ -122,7 +122,7 @@ tensorboard==2.17.1
 tensorboard-data-server==0.7.2
 threadpoolctl==3.5.0
 tomli==2.2.1
-torch==2.4.1+cu121
+# torch==2.4.1+cu121
 torchvision==0.19.1
 tqdm==4.66.1
 triton==3.0.0
