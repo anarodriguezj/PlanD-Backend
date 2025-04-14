@@ -130,7 +130,7 @@ Twisted==22.1.0
 types-requests==2.31.0.10
 typing_extensions==4.12.2
 tzdata==2024.2
-ubuntu-pro-client==8001
+# ubuntu-pro-client==8001
 ufw==0.36.1
 unattended-upgrades==0.1
 uritemplate==4.1.1
