@@ -7,8 +7,10 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .permissions import IsOwnerOrAdmin
 from rest_framework.exceptions import ValidationError
+from django.utils import timezone
 
 class AuctionListCreate(generics.ListCreateAPIView):
+
     serializer_class = AuctionListCreateSerializer
 
     def get_queryset(self):
@@ -19,7 +21,8 @@ class AuctionListCreate(generics.ListCreateAPIView):
         category = params.get('category', None)  # Usar category 
         max_price = params.get('max_price', None)  # Filtro de precio máximo
         min_price = params.get('min_price', None)  # Filtro de precio mínimo
-        
+        is_open = params.get("is_open", None)
+
         print(f"Search: {search}, Category: {category}, Max Price: {max_price}, Min Price: {min_price}")
 
         # Filtrar por término de búsqueda
@@ -48,6 +51,12 @@ class AuctionListCreate(generics.ListCreateAPIView):
                 queryset = queryset.filter(price__lte=max_price)
             except ValueError:
                 pass  # Si no es un valor numérico válido, ignoramos el filtro
+
+        # Filtrar por subastas abiertas
+        if is_open == "true":
+            queryset = queryset.filter(closing_date__gt=timezone.now())
+        elif is_open == "false":
+            queryset = queryset.filter(closing_date__lte=timezone.now())
 
         return queryset
 
