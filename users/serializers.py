@@ -5,7 +5,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            'id', 'username', 'email', 'birth_date',
+            'id', 'username', 'first_name', 'last_name', 'email', 'birth_date',
             'municipality', 'locality', 'password'
         )
         extra_kwargs = {

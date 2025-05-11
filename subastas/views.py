@@ -4,45 +4,53 @@ from rest_framework import generics
 from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .permissions import IsOwnerOrAdmin
+from rest_framework.exceptions import ValidationError
 
 class AuctionListCreate(generics.ListCreateAPIView):
-    
-    '''ListCreateAPIView:
-        - Maneja las operaciones de listar (GET) y crear (POST) recursos.
-        - Proporciona una lista paginada de recursos y permite la creación de nuevos recursos.
-        - Útil para endpoints que necesitan mostrar una lista de recursos y permitir la creación
-        de nuevos recursos.'''
-
     serializer_class = AuctionListCreateSerializer
 
     def get_queryset(self):
-
         queryset = Auction.objects.all()
         params = self.request.query_params
 
-        search = params.get('search')
-        categoria = params.get('categoria')
-        precio_max = params.get('precioMax')
-        precio_min = params.get('precioMin')
+        search = params.get('search', None)  # Filtro de búsqueda por nombre o descripción
+        category = params.get('category', None)  # Usar category 
+        max_price = params.get('max_price', None)  # Filtro de precio máximo
+        min_price = params.get('min_price', None)  # Filtro de precio mínimo
+        
+        print(f"Search: {search}, Category: {category}, Max Price: {max_price}, Min Price: {min_price}")
 
+        # Filtrar por término de búsqueda
         if search:
             queryset = queryset.filter(
                 Q(title__icontains=search) |
                 Q(description__icontains=search)
             )
 
-        if categoria:
-            queryset = queryset.filter(category__name__iexact=categoria)
+        # Filtrar por categoría (ahora usamos category.id)
+        if category:
+            queryset = queryset.filter(category__id=category)
 
-        if precio_min:
-            queryset = queryset.filter(price__gte=precio_min)
+        # Filtrar por precio mínimo
+        if min_price:
+            try:
+                min_price = float(min_price)
+                queryset = queryset.filter(price__gte=min_price)
+            except ValueError:
+                pass  # Si no es un valor numérico válido, ignoramos el filtro
 
-        if precio_max:
-            queryset = queryset.filter(price__lte=precio_max)
+        # Filtrar por precio máximo
+        if max_price:
+            try:
+                max_price = float(max_price)
+                queryset = queryset.filter(price__lte=max_price)
+            except ValueError:
+                pass  # Si no es un valor numérico válido, ignoramos el filtro
 
         return queryset
+
 
 class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     '''
@@ -69,14 +77,19 @@ class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CategoryDetailSerializer
 
 class BidListCreateView(generics.ListCreateAPIView):
-
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = BidDetailSerializer
 
     def get_queryset(self):
         return Bid.objects.filter(auction_id=self.kwargs['auction_id']).order_by('-amount')
 
     def perform_create(self, serializer):
-        auction = Auction.objects.get(pk=self.kwargs['auction_id'])  # obtiene el objeto completo
+        auction = Auction.objects.get(pk=self.kwargs['auction_id']) 
+        
+        if auction.auctioneer.id == self.request.user.id:
+            print("Error: El usuario está intentando pujar en su propia subasta.")  # Agregar log aquí
+            raise ValidationError("No puedes pujar en tu propia subasta.")
+        
         serializer.save(auction=auction, user=self.request.user)
 
 

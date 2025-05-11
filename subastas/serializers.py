@@ -10,6 +10,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
     isOpen = serializers.SerializerMethodField(read_only=True)
+    category = serializers.CharField(source="category.name", read_only=True)
 
     class Meta:
         model = Auction
@@ -52,7 +53,7 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
     isOpen = serializers.SerializerMethodField(read_only=True)
-    category = serializers.CharField(source="category.name", read_only=True) # Para mostrar la categoria en el detalle de la subasta
+    category = serializers.CharField(source="category.name", read_only=True) 
 
     class Meta:
         model = Auction

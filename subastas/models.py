@@ -15,12 +15,10 @@ class Category(models.Model):
 class Auction(models.Model):
 
     '''Modelo de subasta'''
-
-
     title = models.CharField(max_length=150) # Título
     description = models.TextField() # Descripción
     closing_date = models.DateTimeField() # Fecha límie para su cierre
-    creation_date = models.DateTimeField() # Fecha de creación
+    creation_date = models.DateTimeField(auto_now_add=True) # Fecha de creación
     thumbnail = models.URLField() # Campo de imagen
     price = models.DecimalField(max_digits=10, decimal_places=2) # Precio de salida
     stock = models.IntegerField() # Stock
