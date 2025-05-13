@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Auction, Category, Bid
+from .models import Auction, Category, Bid, Rating, Comment
 from django.utils import timezone
 from datetime import timedelta
     
@@ -12,6 +12,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
     isOpen = serializers.SerializerMethodField(read_only=True)
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True)
     category_name = serializers.CharField(source="category.name", read_only=True)
+    average_rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Auction
@@ -19,6 +20,9 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
 
     def get_isOpen(self, obj):
         return obj.closing_date > timezone.now()
+    
+    def get_average_rating(self, obj):
+        return obj.average_rating()
     
     def validate_price(self, value):
         if value <= 0:
@@ -28,11 +32,6 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
     def validate_stock(self, value):
         if value <= 0:
             raise serializers.ValidationError("El stock debe ser un número positivo.")
-        return value
-
-    def validate_rating(self, value):
-        if value < 1 or value > 5:
-            raise serializers.ValidationError("La valoración debe estar entre 1 y 5.")
         return value
     
     def validate(self, data):
@@ -55,16 +54,20 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
     isOpen = serializers.SerializerMethodField(read_only=True)
     category = serializers.CharField(source="category.name", read_only=True) 
+    average_rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Auction
         fields = [
-            "id", "title", "description", "price", "rating", "stock", "brand",
-            "thumbnail", "creation_date", "closing_date", "isOpen", "category"
+            "id", "title", "description", "price", "stock", "brand",
+            "thumbnail", "creation_date", "closing_date", "isOpen", "category", "average_rating",
         ]
 
     def get_isOpen(self, obj):
         return obj.closing_date > timezone.now()
+    
+    def get_average_rating(self, obj):
+        return obj.average_rating()
     
 class CategoryListCreateSerializer(serializers.ModelSerializer):
 
@@ -101,3 +104,17 @@ class BidDetailSerializer(serializers.ModelSerializer):
         model = Bid
         fields = ['id', 'auction', 'user', 'amount', 'timestamp']
         read_only_fields = ['id', 'auction', 'user', 'timestamp']
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = '__all__'
+        read_only_fields = ['user', 'auction']
+
+class CommentSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    class Meta:
+        model = Comment
+        fields ='__all__'
+        read_only_fields = ['id', 'creation_date', 'modification_date', 'user', 'auction']  

@@ -1,5 +1,5 @@
-from .models import Auction, Category, Bid
-from .serializers import AuctionListCreateSerializer, AuctionDetailSerializer, CategoryListCreateSerializer, CategoryDetailSerializer, BidListCreateSerializer, BidDetailSerializer
+from .models import Auction, Category, Bid, Rating, Comment
+from .serializers import AuctionListCreateSerializer, AuctionDetailSerializer, CategoryListCreateSerializer, CategoryDetailSerializer, BidListCreateSerializer, BidDetailSerializer, RatingSerializer, CommentSerializer
 from rest_framework import generics
 from rest_framework.response import Response
 from django.db.models import Q
@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .permissions import IsOwnerOrAdmin
 from rest_framework.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 class AuctionListCreate(generics.ListCreateAPIView):
@@ -130,4 +131,117 @@ class UserAuctionListView(APIView):
         # Obtener las subastas del usuario autenticado
         user_auctions = Auction.objects.filter(auctioneer=request.user)
         serializer = AuctionListCreateSerializer(user_auctions, many=True)
+        return Response(serializer.data)
+    
+class RatingListCreate(generics.ListCreateAPIView):
+    """
+    Listar o crear valoraciones para una subasta específica.
+    """
+    
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = RatingSerializer
+
+    def get_queryset(self):
+        return Rating.objects.filter(auction_id=self.kwargs['auction_id'])
+
+    def perform_create(self, serializer):
+        auction = Auction.objects.get(id=self.kwargs['auction_id'])
+        user = self.request.user
+        
+        if auction.auctioneer == user:
+            raise ValidationError("No puedes valorar tu propia subasta.")
+
+        # Si ya existe una valoración previa, eliminarla antes de guardar la nueva
+        previous = Rating.objects.filter(auction=auction, user=user).first()
+        if previous:
+            previous.delete()
+
+        serializer.save(auction=auction, user=user) # crear nueva valoración
+
+    def post(self, request, auction_id):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=201)
+        else:
+            return Response(serializer.errors, status=400)
+
+class RatingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Ver, actualizar o eliminar una valoración concreta.
+    """
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = RatingSerializer
+
+    def get_queryset(self):
+        return Rating.objects.all()
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
+
+class UserRatingView(APIView):
+    """
+    Consultar o eliminar la valoración del usuario actual sobre una subasta.
+    """
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, auction_id):
+        auction = get_object_or_404(Auction, id=auction_id)
+        rating = Rating.objects.filter(auction=auction, user=request.user).first()
+        if rating:
+            return Response({"rating": rating.rating}, status=200)
+        return Response({"detail": "No has valorado esta subasta"}, status=404)
+
+    def delete(self, request, auction_id):
+        auction = get_object_or_404(Auction, id=auction_id)
+        rating = Rating.objects.filter(auction=auction, user=request.user).first()
+        if rating:
+            rating.delete()
+            return Response({"detail": "Valoración eliminada correctamente."}, status=204)
+        return Response({"detail": "No hay valoración registrada."}, status=404)
+    
+
+class CommentListCreate(generics.ListCreateAPIView):
+    """
+    Listar o añadir comentarios a una subasta.
+    """
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        return Comment.objects.filter(auction_id=self.kwargs['auction_id'])
+
+    def perform_create(self, serializer):
+        auction = Auction.objects.get(id=self.kwargs['auction_id'])
+        user = self.request.user
+
+        # Evitar que el subastador valore su propia subasta
+        if auction.auctioneer == user:
+            raise ValidationError("No puedes valorar tu propia subasta.")
+
+        # Si ya existe una valoración previa, eliminarla antes de guardar la nueva
+        previous = Rating.objects.filter(auction=auction, user=user).first()
+        if previous:
+            previous.delete()
+
+        serializer.save(auction=auction, user=user)
+
+class CommentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Ver, editar o eliminar un comentario específico.
+    """
+    serializer_class = CommentSerializer
+    queryset = Comment.objects.all()
+
+class UserCommentListView(APIView):
+    """
+    Obtener todos los comentarios realizados por el usuario autenticado.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        comments = Comment.objects.filter(user=request.user)
+        serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)

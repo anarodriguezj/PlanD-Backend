@@ -35,13 +35,11 @@ class Auction(models.Model):
         ordering=('id',) 
 
     def average_rating(self):
-
-        '''Función para el cálculo de la media de las valoraciones de la subasta'''
-
         ratings = self.ratings.all()
         if ratings.exists():
-            return sum(rating.value for rating in ratings)/ratings.count()
-        return 1.0
+            return round(sum(r.rating for r in ratings) / ratings.count(), 2)
+        return None
+
     
     def __str__(self):  
         return self.title
