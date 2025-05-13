@@ -38,7 +38,7 @@ class Auction(models.Model):
         ratings = self.ratings.all()
         if ratings.exists():
             return round(sum(r.rating for r in ratings) / ratings.count(), 2)
-        return None
+        return 1
 
     
     def __str__(self):  
