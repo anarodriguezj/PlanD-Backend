@@ -23,8 +23,7 @@ class AuctionListCreate(generics.ListCreateAPIView):
         max_price = params.get('max_price', None)  # Filtro de precio máximo
         min_price = params.get('min_price', None)  # Filtro de precio mínimo
         is_open = params.get("is_open", None)
-
-        print(f"Search: {search}, Category: {category}, Max Price: {max_price}, Min Price: {min_price}")
+        min_rating = params.get("min_rating", None) # Filtro de valoración mínima
 
         # Filtrar por término de búsqueda
         if search:
@@ -43,7 +42,7 @@ class AuctionListCreate(generics.ListCreateAPIView):
                 min_price = float(min_price)
                 queryset = queryset.filter(price__gte=min_price)
             except ValueError:
-                pass  # Si no es un valor numérico válido, ignoramos el filtro
+                pass 
 
         # Filtrar por precio máximo
         if max_price:
@@ -51,13 +50,22 @@ class AuctionListCreate(generics.ListCreateAPIView):
                 max_price = float(max_price)
                 queryset = queryset.filter(price__lte=max_price)
             except ValueError:
-                pass  # Si no es un valor numérico válido, ignoramos el filtro
+                pass 
 
         # Filtrar por subastas abiertas
         if is_open == "true":
             queryset = queryset.filter(closing_date__gt=timezone.now())
         elif is_open == "false":
             queryset = queryset.filter(closing_date__lte=timezone.now())
+            
+        # Filtrar por nota media
+        if min_rating:
+            try:
+                min_rating = float(min_rating)
+                queryset = [a for a in queryset if a.average_rating() >= min_rating]
+            except ValueError:
+                pass 
+
 
         return queryset
 
