@@ -11,7 +11,9 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 class AuctionListCreate(generics.ListCreateAPIView):
-
+    '''
+    Listar o crear subastas.
+    '''
     serializer_class = AuctionListCreateSerializer
 
     def get_queryset(self):
@@ -78,23 +80,28 @@ class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         - Combina las funcionalidades de las vistas RetrieveAPIView, UpdateAPIView y
         DestroyAPIView.
         - Útil para endpoints que necesitan mostrar un recurso específico y permitir su
-        actualización y eliminación.'''
+        actualización y eliminación.
+    '''
     
     permission_classes = [IsOwnerOrAdmin]
     queryset = Auction.objects.all()
     serializer_class = AuctionDetailSerializer
 
 class CategoryListCreate(generics.ListCreateAPIView):
-
+    '''
+    Listar o crear categoría para una subasta específica.
+    '''
     queryset = Category.objects.all()
     serializer_class = CategoryListCreateSerializer
 
 class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-
     queryset = Category.objects.all()
     serializer_class = CategoryDetailSerializer
 
 class BidListCreateView(generics.ListCreateAPIView):
+    '''
+    Listar o crear puja para una subasta específica.
+    '''
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = BidDetailSerializer
 
@@ -112,7 +119,9 @@ class BidListCreateView(generics.ListCreateAPIView):
 
 
 class UserBidListView(generics.ListAPIView):
-
+    '''
+    Obtener todos las pujas realizadas por el usuario autenticado.
+    '''
     permission_classes = [IsAuthenticated]
     serializer_class = BidDetailSerializer
 
@@ -120,7 +129,9 @@ class UserBidListView(generics.ListAPIView):
         return Bid.objects.filter(user=self.request.user)
 
 class BidDetailView(generics.RetrieveUpdateDestroyAPIView):
-
+    '''
+    Ver, actualizar o eliminar una puja concreta.
+    '''
     serializer_class = BidDetailSerializer
 
     def get_queryset(self):
@@ -132,7 +143,6 @@ class BidDetailView(generics.RetrieveUpdateDestroyAPIView):
         return context
 
 class UserAuctionListView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -142,9 +152,9 @@ class UserAuctionListView(APIView):
         return Response(serializer.data)
     
 class RatingListCreate(generics.ListCreateAPIView):
-    """
+    '''
     Listar o crear valoraciones para una subasta específica.
-    """
+    '''
     
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = RatingSerializer
@@ -176,9 +186,9 @@ class RatingListCreate(generics.ListCreateAPIView):
             return Response(serializer.errors, status=400)
 
 class RatingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    """
+    '''
     Ver, actualizar o eliminar una valoración concreta.
-    """
+    '''
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = RatingSerializer
 
@@ -190,9 +200,9 @@ class RatingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
 
 class UserRatingView(APIView):
-    """
+    '''
     Consultar o eliminar la valoración del usuario actual sobre una subasta.
-    """
+    '''
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, auction_id):
@@ -212,9 +222,9 @@ class UserRatingView(APIView):
     
 
 class CommentListCreate(generics.ListCreateAPIView):
-    """
+    '''
     Listar o añadir comentarios a una subasta.
-    """
+    '''
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = CommentSerializer
 
@@ -229,10 +239,6 @@ class CommentListCreate(generics.ListCreateAPIView):
         if auction.auctioneer == user:
             raise ValidationError("No puedes valorar tu propia subasta.")
 
-        previous = Comment.objects.filter(auction=auction, user=user).first()
-        if previous:
-            previous.delete()
-
         serializer.save(auction=auction, user=user)
 
     def post(self, request, auction_id):
@@ -244,16 +250,16 @@ class CommentListCreate(generics.ListCreateAPIView):
             return Response(serializer.errors, status=400)
 
 class CommentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    """
+    '''
     Ver, editar o eliminar un comentario específico.
-    """
+    '''
     serializer_class = CommentSerializer
     queryset = Comment.objects.all()
 
 class UserCommentListView(APIView):
-    """
+    '''
     Obtener todos los comentarios realizados por el usuario autenticado.
-    """
+    '''
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
