@@ -6,7 +6,7 @@ data = [
         "email": "usuario1@demo.com",
         "birth_date": "1995-03-20",
         "municipality": "Valencia",
-        "locality": "Ciutat Vella",
+        "locality": "Gandía",
         "password": "DemoPass1"
     },
     {
@@ -15,8 +15,8 @@ data = [
         "last_name": "Fernández",
         "email": "usuario2@demo.com",
         "birth_date": "1990-08-12",
-        "municipality": "Bilbao",
-        "locality": "Abando",
+        "municipality": "Barcelona",
+        "locality": "Sant Cugat del Vallès",
         "password": "DemoPass2"
     },
     {
@@ -26,7 +26,7 @@ data = [
         "email": "usuario3@demo.com",
         "birth_date": "1987-11-30",
         "municipality": "Zaragoza",
-        "locality": "Casco Histórico",
+        "locality": "Calatayud",
         "password": "DemoPass3"
     }
 ]
