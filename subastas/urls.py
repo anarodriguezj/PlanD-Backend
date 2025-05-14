@@ -6,8 +6,8 @@ from .views import (
     CategoryRetrieveUpdateDestroy, 
     UserAuctionListView, 
     UserBidListView, 
-    BidListCreateView, 
-    BidDetailView,
+    BidListCreate,
+    BidRetrieveUpdateDestroy,
     RatingListCreate,
     RatingRetrieveUpdateDestroy,
     UserRatingView,
@@ -29,8 +29,8 @@ urlpatterns = [
     path('<int:pk>/', AuctionRetrieveUpdateDestroy.as_view(), name='auction-detail'),
 
     # Bids
-    path('<int:auction_id>/bid', BidListCreateView.as_view(), name='bid-list-create'),
-    path('<int:auction_id>/bid/<int:pk>', BidDetailView.as_view(), name='bid-detail'),
+    path('<int:auction_id>/bid', BidListCreate.as_view(), name='bid-list-create'),
+    path('<int:auction_id>/bid/<int:pk>', BidRetrieveUpdateDestroy.as_view(), name='bid-detail'),
 
     # Users
     path('users/', UserAuctionListView.as_view(), name='action-from-users'),
@@ -44,5 +44,5 @@ urlpatterns = [
     # Comments
     path('<int:auction_id>/comments/', CommentListCreate.as_view(), name='comment-list-create'),
     path('<int:auction_id>/comments/<int:pk>/', CommentRetrieveUpdateDestroy.as_view(), name='comment-detail'),  
-    path('users/comments/', UserCommentListView.as_view(), name='user-comments'),
+    path('<int:auction_id>/comments/user/', UserCommentListView.as_view(), name='user-comments'),
 ]

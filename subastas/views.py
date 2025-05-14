@@ -1,5 +1,13 @@
 from .models import Auction, Category, Bid, Rating, Comment
-from .serializers import AuctionListCreateSerializer, AuctionDetailSerializer, CategoryListCreateSerializer, CategoryDetailSerializer, BidListCreateSerializer, BidDetailSerializer, RatingSerializer, CommentSerializer
+from .serializers import (
+    AuctionListCreateSerializer, 
+    AuctionDetailSerializer, 
+    CategoryListCreateSerializer, 
+    CategoryDetailSerializer,  
+    BidDetailSerializer, 
+    RatingSerializer, 
+    CommentSerializer
+)
 from rest_framework import generics
 from rest_framework.response import Response
 from django.db.models import Q
@@ -71,7 +79,6 @@ class AuctionListCreate(generics.ListCreateAPIView):
 
         return queryset
 
-
 class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     '''
     RetrieveUpdateDestroyAPIView:
@@ -98,25 +105,34 @@ class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoryDetailSerializer
 
-class BidListCreateView(generics.ListCreateAPIView):
+class BidListCreate(generics.ListCreateAPIView):
     '''
-    Listar o crear puja para una subasta específica.
+    Listar o crear valoraciones para una subasta específica.
     '''
+    
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = BidDetailSerializer
 
     def get_queryset(self):
-        return Bid.objects.filter(auction_id=self.kwargs['auction_id']).order_by('-amount')
+        return Bid.objects.filter(auction_id=self.kwargs['auction_id'])
 
     def perform_create(self, serializer):
-        auction = Auction.objects.get(pk=self.kwargs['auction_id']) 
+        auction = Auction.objects.get(id=self.kwargs['auction_id'])
+        user = self.request.user
         
-        if auction.auctioneer.id == self.request.user.id:
-            print("Error: El usuario está intentando pujar en su propia subasta.")  # Agregar log aquí
+        if auction.auctioneer == user:
             raise ValidationError("No puedes pujar en tu propia subasta.")
-        
-        serializer.save(auction=auction, user=self.request.user)
 
+        serializer.save(auction=auction, user=user) # crear nueva puja
+
+    def post(self, request, auction_id):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=201)
+        else:
+            return Response(serializer.errors, status=400)
 
 class UserBidListView(generics.ListAPIView):
     '''
@@ -126,21 +142,20 @@ class UserBidListView(generics.ListAPIView):
     serializer_class = BidDetailSerializer
 
     def get_queryset(self):
-        return Bid.objects.filter(user=self.request.user)
-
-class BidDetailView(generics.RetrieveUpdateDestroyAPIView):
+        return Bid.objects.filter(user=self.request.user)    
+    
+class BidRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     '''
-    Ver, actualizar o eliminar una puja concreta.
+    Ver, actualizar o eliminar una valoración concreta.
     '''
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = BidDetailSerializer
 
     def get_queryset(self):
-        return Bid.objects.filter(auction_id=self.kwargs['auction_id']) 
-        
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context
+        return Bid.objects.all()
+
+    def perform_destroy(self, instance):
+        instance.delete()
 
 class UserAuctionListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -249,12 +264,20 @@ class CommentListCreate(generics.ListCreateAPIView):
         else:
             return Response(serializer.errors, status=400)
 
+    
 class CommentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     '''
-    Ver, editar o eliminar un comentario específico.
+    Ver, actualizar o eliminar un comentario concreto.
     '''
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = CommentSerializer
-    queryset = Comment.objects.all()
+
+    def get_queryset(self):
+        return Comment.objects.all()
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        
 
 class UserCommentListView(APIView):
     '''
