@@ -235,6 +235,18 @@ class UserRatingView(APIView):
             return Response({"detail": "Valoración eliminada correctamente."}, status=204)
         return Response({"detail": "No hay valoración registrada."}, status=404)
     
+class UserRatingListView(APIView):
+    '''
+    Obtener todas las valoraciones realizadas por el usuario autenticado.
+    '''
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        ratings = Rating.objects.filter(user=request.user)
+        serializer = RatingSerializer(ratings, many=True)
+        return Response(serializer.data)
+
+    
 
 class CommentListCreate(generics.ListCreateAPIView):
     '''
