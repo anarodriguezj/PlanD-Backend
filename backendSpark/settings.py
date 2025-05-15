@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-65*65oz13!(myshy%+mu+j2r+lsoai31f-g864hd9d_vjjcnyf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "@dpg-cvu23l9r0fns73e3ied0-a.frankfurt-postgres.render.com"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "@dpg-cvu23l9r0fns73e3ied0-a.frankfurt-postgres.render.com", "pland-backend-7kfx.onrender.com"]
 
 
 
