@@ -47,5 +47,4 @@ urlpatterns = [
     # Comments
     path('<int:auction_id>/comments/', CommentListCreate.as_view(), name='comment-list-create'),
     path('<int:auction_id>/comments/<int:pk>/', CommentRetrieveUpdateDestroy.as_view(), name='comment-detail'),  
-    # path('<int:auction_id>/comments/user/', UserCommentListView.as_view(), name='user-comments'),
 ]

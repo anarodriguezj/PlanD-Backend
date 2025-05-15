@@ -70,6 +70,7 @@ class Rating(models.Model):
     user = models.ForeignKey(CustomUser, related_name="ratings", on_delete=models.CASCADE) # Usuario que valora
     
     class Meta:
+
         ordering=('id',)
 
     def __str__(self):
@@ -87,4 +88,5 @@ class Comment(models.Model):
     modification_date = models.DateTimeField(auto_now=True) # Fecha de modificación
     
     def __str__(self):
+
         return f"{self.user.username} commented {self.title} for {self.auction.title}" 

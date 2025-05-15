@@ -8,7 +8,7 @@ import os
     
 class AuctionListCreateSerializer(serializers.ModelSerializer):
 
-    '''para la lista de subastas (GET /subastas/) y para crear nuevas (POST).'''
+    '''Serializer usado para la lista de subastas (GET /subastas/) y para crear nuevas (POST).'''
 
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
@@ -51,7 +51,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
 
 class AuctionDetailSerializer(serializers.ModelSerializer):
 
-    ''' para ver detalles (GET /subastas/<id>/), actualizar o eliminar. '''
+    ''' Serializer usado para ver detalles (GET /subastas/<id>/), actualizar o eliminar. '''
 
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
@@ -85,15 +85,8 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class BidDetailSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source="user.username", read_only=True)
-    
-    class Meta:
-        model = Bid
-        fields = ['id', 'auction', 'user', 'amount', 'timestamp']
-        read_only_fields = ['id', 'auction', 'user', 'timestamp']
-
 class AuctionSummarySerializer(serializers.ModelSerializer):
+
     category = serializers.CharField(source="category.name", read_only=True)
     isOpen = serializers.SerializerMethodField()
 
@@ -102,11 +95,22 @@ class AuctionSummarySerializer(serializers.ModelSerializer):
         fields = ["title", "price", "category", "isOpen"]
 
     def get_isOpen(self, obj):
-        from django.utils import timezone
+        
         return obj.closing_date > timezone.now()
+    
+class BidDetailSerializer(serializers.ModelSerializer):
+
+    user = serializers.CharField(source="user.username", read_only=True)
+    auction = AuctionSummarySerializer(read_only=True)
+    
+    class Meta:
+        model = Bid
+        fields = '__all__'
+        read_only_fields = ['id', 'user', 'timestamp', 'auction']
 
 
 class RatingSerializer(serializers.ModelSerializer):
+
     username = serializers.CharField(source='user.username', read_only=True)
     auction = AuctionSummarySerializer(read_only=True)
     class Meta:
@@ -115,6 +119,7 @@ class RatingSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'auction']
 
 class CommentSerializer(serializers.ModelSerializer):
+
     username = serializers.CharField(source='user.username', read_only=True)
     auction = AuctionSummarySerializer(read_only=True)
     class Meta:
