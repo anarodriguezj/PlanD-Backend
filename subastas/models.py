@@ -24,7 +24,8 @@ class Auction(models.Model):
     description = models.TextField() # Descripción
     closing_date = models.DateTimeField() # Fecha límie para su cierre
     creation_date = models.DateTimeField(auto_now_add=True) # Fecha de creación
-    thumbnail = models.URLField() # Campo de imagen
+    # thumbnail = models.URLField() # Campo de imagen
+    thumbnail = models.ImageField(upload_to='thumbnails/') # Campo de imagen
     price = models.DecimalField(max_digits=10, decimal_places=2) # Precio de salida
     stock = models.IntegerField() # Stock
     category = models.ForeignKey(Category, related_name='subastas', on_delete=models.CASCADE) # Categoría

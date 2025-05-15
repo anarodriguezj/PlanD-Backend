@@ -2,6 +2,9 @@ from rest_framework import serializers
 from .models import Auction, Category, Bid, Rating, Comment
 from django.utils import timezone
 from datetime import timedelta
+import requests
+from django.core.files.base import ContentFile
+import os
     
 class AuctionListCreateSerializer(serializers.ModelSerializer):
 
@@ -43,7 +46,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
 
         if closing < creation + timedelta(days=15):
             raise serializers.ValidationError("La subasta debe durar al menos 15 días.")
-
+        
         return data
 
 class AuctionDetailSerializer(serializers.ModelSerializer):
@@ -90,8 +93,22 @@ class BidDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'auction', 'user', 'amount', 'timestamp']
         read_only_fields = ['id', 'auction', 'user', 'timestamp']
 
+class AuctionSummarySerializer(serializers.ModelSerializer):
+    category = serializers.CharField(source="category.name", read_only=True)
+    isOpen = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Auction
+        fields = ["title", "price", "category", "isOpen"]
+
+    def get_isOpen(self, obj):
+        from django.utils import timezone
+        return obj.closing_date > timezone.now()
+
 
 class RatingSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    auction = AuctionSummarySerializer(read_only=True)
     class Meta:
         model = Rating
         fields = '__all__'
@@ -99,7 +116,10 @@ class RatingSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
+    auction = AuctionSummarySerializer(read_only=True)
     class Meta:
         model = Comment
         fields ='__all__'
         read_only_fields = ['id', 'creation_date', 'modification_date', 'user', 'auction']  
+        
+
