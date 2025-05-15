@@ -24,6 +24,7 @@ class AuctionListCreate(generics.ListCreateAPIView):
     Aplica filtros de búsqueda (si se proporcionan) devolviendo una lista de subastas filtrada.
     '''
     serializer_class = AuctionListCreateSerializer
+    # permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
 
@@ -79,6 +80,10 @@ class AuctionListCreate(generics.ListCreateAPIView):
                 pass 
 
         return queryset
+    
+    def perform_create(self, serializer):
+        serializer.save(auctioneer=self.request.user)
+
 
 class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     '''
